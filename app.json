@@ -2,11 +2,34 @@
   "name": "Social Media Downloader Bot",
   "description": "A Telegram bot to download videos from social media links (YouTube, Instagram, Facebook, Twitter, TikTok & more).",
   "repository": "https://github.com/STD-DEEPANSHU/SMD",
-  "keywords": ["telegram", "bot", "social-media", "youtube", "downloader", "yt-dlp"],
+  "keywords": [
+    "telegram",
+    "bot",
+    "social-media",
+    "youtube",
+    "instagram",
+    "facebook",
+    "tiktok",
+    "downloader",
+    "yt-dlp",
+    "pyrogram"
+  ],
   "env": {
     "BOT_TOKEN": {
-      "description": "Your Telegram Bot API Token from @BotFather",
+      "description": "Your Telegram Bot Token from @BotFather",
       "required": true
+    },
+    "API_ID": {
+      "description": "Telegram API ID from https://my.telegram.org",
+      "required": true
+    },
+    "API_HASH": {
+      "description": "Telegram API HASH from https://my.telegram.org",
+      "required": true
+    },
+    "OWNER_ID": {
+      "description": "Your Telegram numeric user ID",
+      "required": false
     }
   },
   "formation": {
