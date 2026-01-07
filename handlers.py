@@ -1,16 +1,22 @@
-from telegram import Update
-from telegram.ext import CommandHandler, MessageHandler, ContextTypes, filters
-from downloader import download_and_send
+from pyrogram import filters
+from utils.detect import detect_platform
+from smd import DOWNLOADERS
 
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "👋 Send me any social media video link, I'll download it for you!"
-    )
+async def handle_message(client, message):
+    if not message.text:
+        return
 
-async def video_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    url = update.message.text.strip()
-    await download_and_send(url, update)
+    url = message.text.strip()
+    platform = detect_platform(url)
 
-def register_handlers(app):
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, video_handler))
+    if not platform:
+        await message.reply("❌ Unsupported link")
+        return
+
+    await message.reply("⏳ Downloading...")
+
+    try:
+        file_path = DOWNLOADERS[platform](url)
+        await message.reply_document(file_path)
+    except Exception as e:
+        await message.reply(f"❌ Error: {e}")
