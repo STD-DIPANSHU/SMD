@@ -1,5 +1,10 @@
-BOT_TOKEN = "PASTE_YOUR_TELEGRAM_BOT_TOKEN"
-OWNER_ID = 123456789   # apna telegram id
+import os
+
+BOT_TOKEN = os.getenv("BOT_TOKEN")
+
+API_ID = int(os.getenv("API_ID", 0))
+API_HASH = os.getenv("API_HASH")
+
+OWNER_ID = int(os.getenv("OWNER_ID", 0))
 
 DOWNLOAD_DIR = "downloads"
-MAX_FILE_SIZE = 2000  # MB (Telegram limit logic ke liye)
