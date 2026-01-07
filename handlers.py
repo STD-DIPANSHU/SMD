@@ -9,7 +9,6 @@ async def handle_message(client, message):
 
     try:
         path, mtype = download_media(url)
-
         await msg.delete()
 
         if mtype == "video":
@@ -18,4 +17,7 @@ async def handle_message(client, message):
             await message.reply_photo(path)
 
     except Exception as e:
-        await msg.edit(f"❌ Failed:\n{e}")
+        await msg.edit(
+            "❌ Kuch bhi download nahi mila.\n"
+            "⚠️ Ya to private content hai ya link galat hai."
+        )
