@@ -1,1 +1,1 @@
-worker: python smd.py
+worker: python bot.py
