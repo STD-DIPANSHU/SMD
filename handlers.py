@@ -1,24 +1,27 @@
-from pyrogram.types import (
-    InlineKeyboardMarkup,
-    InlineKeyboardButton
-)
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from smd.universal import download_media
+import uuid
+
+# 🔥 URL cache (callback_data limit fix)
+URL_CACHE = {}
 
 
 # =========================
-# 🔹 MAIN MESSAGE HANDLER
+# MAIN MESSAGE HANDLER
 # =========================
 async def handle_message(client, message):
     if not message.text:
         return
 
     url = message.text.strip()
+    key = uuid.uuid4().hex[:8]
+    URL_CACHE[key] = url
 
     keyboard = InlineKeyboardMarkup(
         [
             [
-                InlineKeyboardButton("🎥 Video", callback_data=f"media|video|{url}"),
-                InlineKeyboardButton("🎵 Audio", callback_data=f"media|audio|{url}")
+                InlineKeyboardButton("🎥 Video", callback_data=f"media|video|{key}"),
+                InlineKeyboardButton("🎵 Audio", callback_data=f"media|audio|{key}")
             ]
         ]
     )
@@ -30,27 +33,32 @@ async def handle_message(client, message):
 
 
 # =========================
-# 🔹 MEDIA TYPE CALLBACK
+# MEDIA TYPE CALLBACK
 # =========================
 async def media_choice_cb(client, callback):
-    _, mode, url = callback.data.split("|", 2)
+    _, mode, key = callback.data.split("|", 2)
+    url = URL_CACHE.get(key)
+
+    if not url:
+        await callback.answer("❌ Session expired. Link dobara bhejo.", show_alert=True)
+        return
 
     if mode == "audio":
         msg = await callback.message.edit_text("🎵 Audio download ho raha hai...")
         path, _ = download_media(url, mode="audio")
         await msg.delete()
         await callback.message.reply_audio(path)
+        URL_CACHE.pop(key, None)
         return
 
-    # VIDEO → ask quality
     keyboard = InlineKeyboardMarkup(
         [
             [
-                InlineKeyboardButton("360p", callback_data=f"quality|360|{url}"),
-                InlineKeyboardButton("720p", callback_data=f"quality|720|{url}")
+                InlineKeyboardButton("360p", callback_data=f"quality|360|{key}"),
+                InlineKeyboardButton("720p", callback_data=f"quality|720|{key}")
             ],
             [
-                InlineKeyboardButton("⭐ Best", callback_data=f"quality|best|{url}")
+                InlineKeyboardButton("⭐ Best", callback_data=f"quality|best|{key}")
             ]
         ]
     )
@@ -62,10 +70,15 @@ async def media_choice_cb(client, callback):
 
 
 # =========================
-# 🔹 QUALITY CALLBACK
+# QUALITY CALLBACK
 # =========================
 async def quality_choice_cb(client, callback):
-    _, quality, url = callback.data.split("|", 2)
+    _, quality, key = callback.data.split("|", 2)
+    url = URL_CACHE.get(key)
+
+    if not url:
+        await callback.answer("❌ Session expired. Link dobara bhejo.", show_alert=True)
+        return
 
     msg = await callback.message.edit_text(
         f"🎥 Video ({quality}) download ho raha hai..."
@@ -75,3 +88,4 @@ async def quality_choice_cb(client, callback):
 
     await msg.delete()
     await callback.message.reply_video(path)
+    URL_CACHE.pop(key, None)
