@@ -1,23 +1,80 @@
+from pyrogram import filters
+from pyrogram.types import (
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
 from smd.universal import download_media
 
+
+# =========================
+# 🔹 MAIN MESSAGE HANDLER
+# =========================
 async def handle_message(client, message):
     if not message.text:
         return
 
     url = message.text.strip()
-    msg = await message.reply("⏳ Downloading...")
 
-    try:
-        path, mtype = download_media(url)
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("🎥 Video", callback_data=f"media|video|{url}"),
+                InlineKeyboardButton("🎵 Audio", callback_data=f"media|audio|{url}")
+            ]
+        ]
+    )
+
+    await message.reply(
+        "Kya download karna hai?",
+        reply_markup=keyboard
+    )
+
+
+# =========================
+# 🔹 MEDIA TYPE CALLBACK
+# =========================
+@Client.on_callback_query(filters.regex("^media\\|"))
+async def media_choice_cb(client, callback):
+    _, mode, url = callback.data.split("|", 2)
+
+    if mode == "audio":
+        msg = await callback.message.edit_text("🎵 Audio download ho raha hai...")
+        path, _ = download_media(url, mode="audio")
         await msg.delete()
+        await callback.message.reply_audio(path)
+        return
 
-        if mtype == "video":
-            await message.reply_video(path)
-        else:
-            await message.reply_photo(path)
+    # VIDEO → ask quality
+    keyboard = InlineKeyboardMarkup(
+        [
+            [
+                InlineKeyboardButton("360p", callback_data=f"quality|360|{url}"),
+                InlineKeyboardButton("720p", callback_data=f"quality|720|{url}")
+            ],
+            [
+                InlineKeyboardButton("⭐ Best", callback_data=f"quality|best|{url}")
+            ]
+        ]
+    )
 
-    except Exception as e:
-        await msg.edit(
-            "❌ Kuch bhi download nahi mila.\n"
-            "⚠️ Ya to private content hai ya link galat hai."
-        )
+    await callback.message.edit_text(
+        "Video quality select karo:",
+        reply_markup=keyboard
+    )
+
+
+# =========================
+# 🔹 QUALITY CALLBACK
+# =========================
+@Client.on_callback_query(filters.regex("^quality\\|"))
+async def quality_choice_cb(client, callback):
+    _, quality, url = callback.data.split("|", 2)
+
+    msg = await callback.message.edit_text(
+        f"🎥 Video ({quality}p) download ho raha hai..."
+    )
+
+    path, _ = download_media(url, mode="video", quality=quality)
+
+    await msg.delete()
+    await callback.message.reply_video(path)
