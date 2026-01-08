@@ -1,4 +1,3 @@
-from pyrogram import filters
 from pyrogram.types import (
     InlineKeyboardMarkup,
     InlineKeyboardButton
@@ -33,7 +32,6 @@ async def handle_message(client, message):
 # =========================
 # 🔹 MEDIA TYPE CALLBACK
 # =========================
-@Client.on_callback_query(filters.regex("^media\\|"))
 async def media_choice_cb(client, callback):
     _, mode, url = callback.data.split("|", 2)
 
@@ -66,12 +64,11 @@ async def media_choice_cb(client, callback):
 # =========================
 # 🔹 QUALITY CALLBACK
 # =========================
-@Client.on_callback_query(filters.regex("^quality\\|"))
 async def quality_choice_cb(client, callback):
     _, quality, url = callback.data.split("|", 2)
 
     msg = await callback.message.edit_text(
-        f"🎥 Video ({quality}p) download ho raha hai..."
+        f"🎥 Video ({quality}) download ho raha hai..."
     )
 
     path, _ = download_media(url, mode="video", quality=quality)
