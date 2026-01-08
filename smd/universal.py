@@ -5,10 +5,10 @@ from bs4 import BeautifulSoup
 
 HEADERS = {"User-Agent": "Mozilla/5.0"}
 
-def download_media(url: str, mode="video", quality="best"):
+def download_media(url: str, mode="video"):
     os.makedirs("downloads", exist_ok=True)
 
-    # 🎵 AUDIO
+    # 🎵 AUDIO (MP3)
     if mode == "audio":
         ydl_opts = {
             "format": "bestaudio/best",
@@ -24,17 +24,10 @@ def download_media(url: str, mode="video", quality="best"):
             info = ydl.extract_info(url, download=True)
             return ydl.prepare_filename(info), "audio"
 
-    # 🎥 VIDEO
+    # 🎥 VIDEO (BEST QUALITY ONLY)
     try:
-        if quality == "360":
-            fmt = "best[height<=360]"
-        elif quality == "720":
-            fmt = "best[height<=720]"
-        else:
-            fmt = "best"
-
         ydl_opts = {
-            "format": fmt,
+            "format": "best",
             "outtmpl": "downloads/%(extractor)s_%(id)s.%(ext)s",
             "quiet": True,
             "noplaylist": True
@@ -47,7 +40,7 @@ def download_media(url: str, mode="video", quality="best"):
     except Exception:
         pass
 
-    # 🖼️ IMAGE FALLBACK (Pinterest / wallpapers)
+    # 🖼️ IMAGE FALLBACK (Pinterest / wallpaper)
     try:
         r = requests.get(url, headers=HEADERS, timeout=10)
         soup = BeautifulSoup(r.text, "html.parser")
