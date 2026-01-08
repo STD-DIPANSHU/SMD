@@ -2,7 +2,7 @@ from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 from smd.universal import download_media
 import uuid
 
-# 🔥 URL cache (callback_data limit fix)
+# URL cache (callback_data limit fix)
 URL_CACHE = {}
 
 
@@ -51,41 +51,9 @@ async def media_choice_cb(client, callback):
         URL_CACHE.pop(key, None)
         return
 
-    keyboard = InlineKeyboardMarkup(
-        [
-            [
-                InlineKeyboardButton("360p", callback_data=f"quality|360|{key}"),
-                InlineKeyboardButton("720p", callback_data=f"quality|720|{key}")
-            ],
-            [
-                InlineKeyboardButton("⭐ Best", callback_data=f"quality|best|{key}")
-            ]
-        ]
-    )
-
-    await callback.message.edit_text(
-        "Video quality select karo:",
-        reply_markup=keyboard
-    )
-
-
-# =========================
-# QUALITY CALLBACK
-# =========================
-async def quality_choice_cb(client, callback):
-    _, quality, key = callback.data.split("|", 2)
-    url = URL_CACHE.get(key)
-
-    if not url:
-        await callback.answer("❌ Session expired. Link dobara bhejo.", show_alert=True)
-        return
-
-    msg = await callback.message.edit_text(
-        f"🎥 Video ({quality}) download ho raha hai..."
-    )
-
-    path, _ = download_media(url, mode="video", quality=quality)
-
+    # VIDEO (BEST QUALITY by default)
+    msg = await callback.message.edit_text("🎥 Video download ho raha hai...")
+    path, _ = download_media(url, mode="video")
     await msg.delete()
     await callback.message.reply_video(path)
     URL_CACHE.pop(key, None)
