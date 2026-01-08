@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from config import BOT_TOKEN, API_ID, API_HASH
-from handlers import handle_message, media_choice_cb, quality_choice_cb
+from handlers import handle_message, media_choice_cb
 
 app = Client(
     "smd-bot",
@@ -18,11 +18,6 @@ async def on_message(client, message):
 @app.on_callback_query(filters.regex("^media\\|"))
 async def on_media_choice(client, callback):
     await media_choice_cb(client, callback)
-
-
-@app.on_callback_query(filters.regex("^quality\\|"))
-async def on_quality_choice(client, callback):
-    await quality_choice_cb(client, callback)
 
 
 print("🔥 SMD Bot Started")
